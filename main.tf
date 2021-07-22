@@ -29,10 +29,12 @@ resource "aws_security_group" "alb" {
 
 #------------------Application_Load_Balancer-----------------------
 
-resource "aws_alb" "alb" {
-  name            = "terraform-alb"
-  security_groups = ["${aws_security_group.alb.id}"]
-  subnets         = [var.subnet_a, var.subnet_b, var.subnet_c]
+resource "aws_lb" "alb" {
+  name               = "terraform-alb"
+  load_balancer_type = "application"
+  security_groups    = ["${aws_security_group.alb.id}"]
+  subnets            = [var.subnet_a, var.subnet_b, var.subnet_c]
+  count              = var.load_balancer_type == "alb" ? 1 : 0
   tags = {
     Name = "terraform-alb"
   }
@@ -43,7 +45,7 @@ resource "aws_lb" "nlb" {
   name               = "terraform-nlb"
   load_balancer_type = "network"
   subnets            = [var.subnet_a, var.subnet_b, var.subnet_c]
-
+  count              = var.load_balancer_type == "nlb" ? 1 : 0
   tags = {
     Name = "terraform-nlb"
   }
@@ -51,7 +53,7 @@ resource "aws_lb" "nlb" {
 #------------------Listener_for_ALB---------------------
 
 resource "aws_alb_listener" "listener_http" {
-  load_balancer_arn = aws_alb.alb.arn
+  load_balancer_arn = aws_lb.alb[0].arn
   port              = "80"
   protocol          = "HTTP"
 
@@ -59,27 +61,37 @@ resource "aws_alb_listener" "listener_http" {
     target_group_arn = aws_alb_target_group.web.arn
     type             = "forward"
   }
+  depends_on = [aws_lb.alb]
 }
 
 #------------------Listener_for_NLB---------------------
-resource "aws_lb_listener" "listener_tcp" {
-  load_balancer_arn = aws_lb.nlb.arn
-  port              = "80"
-  protocol          = "TCP"
-
-  default_action {
-    target_group_arn = aws_lb_target_group.web.arn
-    type             = "forward"
-  }
-}
-#--------------------Target_Group_attachment-----------------------
-
-# resource "aws_alb_target_group_attachment" "web" {
-#   count            = length(data.aws_instance.web.id)
-#   target_group_arn = aws_alb_target_group.web.arn
-#   target_id        = data.aws_instance.web.id[count.index]
-#   port             = 80
+# resource "aws_lb_listener" "listener_tcp" {
+#   load_balancer_arn = aws_lb.nlb[0].arn
+#   port              = "80"
+#   protocol          = "TCP"
+#
+#   default_action {
+#     target_group_arn = aws_lb_target_group.web.arn
+#     type             = "forward"
+#   }
+#   depends_on = [aws_lb.nlb]
 # }
+#--------------------Target_Group_attachment-----------------------
+resource "aws_lb_target_group_attachment" "web" {
+  target_group_arn = aws_alb_target_group.web.arn
+  target_id        = "i-04f6fed99f93ae0a0"
+  port             = 80
+}
+resource "aws_lb_target_group_attachment" "web-1" {
+  target_group_arn = aws_alb_target_group.web.arn
+  target_id        = "i-0155696381ef608f7"
+  port             = 80
+}
+resource "aws_lb_target_group_attachment" "web-2" {
+  target_group_arn = aws_alb_target_group.web.arn
+  target_id        = "i-02c2f6075dfb64692"
+  port             = 80
+}
 
 #-------------------------Target_Group_ALB---------------------------
 
@@ -122,3 +134,14 @@ resource "aws_instance" "web" {
     Name = "instance_count-${each.value}"
   }
 }
+
+#------------------------Parametrized Load Balancer-------------------------
+
+# data "aws_lb" "my_load_balancer" {
+#   depends_on = [aws_lb.alb, aws_lb.nlb]
+# }
+#
+# output "type_my_lb" {
+#   value       = aws_lb.my_load_balancer.load_balancer_type
+#   description = "Type created load balancer"
+# }

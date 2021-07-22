@@ -22,3 +22,8 @@ variable "subnet_c" {
   type    = string
   default = "subnet-0011bdd5c40923dc4"
 }
+
+variable "load_balancer_type" {
+  type    = string
+  default = "alb"
+}
