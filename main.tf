@@ -106,14 +106,6 @@ resource "aws_lb_target_group" "web" {
   port     = 80
   protocol = "TCP"
   vpc_id   = var.vpc_id
-  health_check {
-    path                = "/"
-    port                = 80
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    timeout             = 3
-    interval            = 10
-  }
 }
 
 #------------------------Instances-------------------------
