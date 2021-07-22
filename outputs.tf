@@ -17,3 +17,10 @@ data "aws_subnet_ids" "subnet_public" {
     values = ["AWS-task-PublicSubnet-a", "AWS-task-PublicSubnet-b", "AWS-task-PublicSubnet-c"]
   }
 }
+
+# data "aws_instance" "web" {
+#   filter {
+#     name   = "image-id"
+#     values = [data.aws_ami.latest_amazon_linux.id]
+#   }
+# }
