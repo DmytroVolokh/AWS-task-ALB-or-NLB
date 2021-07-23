@@ -27,8 +27,3 @@ variable "load_balancer_type" {
   type    = string
   default = "alb"
 }
-
-variable "list_instances" {
-  type    = set(string)
-  default = ["i-0eb64a3d0b4e009cd", "i-09bbbc27bcbdd4350", "i-09c9360658e08e67f"]
-}
