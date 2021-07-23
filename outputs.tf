@@ -17,3 +17,14 @@ data "aws_subnet_ids" "subnet_public" {
     values = ["AWS-task-PublicSubnet-a", "AWS-task-PublicSubnet-b", "AWS-task-PublicSubnet-c"]
   }
 }
+
+data "aws_instances" "my_list_instances" {
+  instance_tags = {
+    Name = "instance_count-*"
+  }
+  instance_state_names = ["running", "terminated"]
+}
+
+output "list_instances" {
+  value = data.aws_instances.my_list_instances
+}

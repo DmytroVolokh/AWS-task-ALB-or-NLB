@@ -52,44 +52,48 @@ resource "aws_lb" "nlb" {
 }
 #------------------Listener_for_ALB---------------------
 
-resource "aws_alb_listener" "listener_http" {
-  load_balancer_arn = aws_lb.alb[0].arn
-  port              = "80"
-  protocol          = "HTTP"
-
-  default_action {
-    target_group_arn = aws_alb_target_group.web.arn
-    type             = "forward"
-  }
-  depends_on = [aws_lb.alb]
-}
-
-#------------------Listener_for_NLB---------------------
-# resource "aws_lb_listener" "listener_tcp" {
-#   load_balancer_arn = aws_lb.nlb[0].arn
+# resource "aws_alb_listener" "listener_http" {
+#   load_balancer_arn = aws_lb.alb[0].arn
 #   port              = "80"
-#   protocol          = "TCP"
+#   protocol          = "HTTP"
 #
 #   default_action {
-#     target_group_arn = aws_lb_target_group.web.arn
+#     target_group_arn = aws_alb_target_group.web.arn
 #     type             = "forward"
 #   }
-#   depends_on = [aws_lb.nlb]
 # }
+
+#------------------Listener_for_NLB---------------------
+resource "aws_lb_listener" "listener_tcp" {
+  load_balancer_arn = aws_lb.nlb[0].arn
+  port              = "80"
+  protocol          = "TCP"
+
+  default_action {
+    target_group_arn = aws_lb_target_group.web.arn
+    type             = "forward"
+  }
+}
 #--------------------Target_Group_attachment-----------------------
+# resource "aws_lb_target_group_attachment" "web" {
+#   for_each         = var.list_instances
+#   target_group_arn = aws_alb_target_group.web.arn
+#   target_id        = each.key
+#   port             = 80
+# }
 resource "aws_lb_target_group_attachment" "web" {
-  target_group_arn = aws_alb_target_group.web.arn
-  target_id        = "i-04f6fed99f93ae0a0"
+  target_group_arn = aws_lb_target_group.web.arn
+  target_id        = "i-0eb64a3d0b4e009cd"
   port             = 80
 }
 resource "aws_lb_target_group_attachment" "web-1" {
-  target_group_arn = aws_alb_target_group.web.arn
-  target_id        = "i-0155696381ef608f7"
+  target_group_arn = aws_lb_target_group.web.arn
+  target_id        = "i-09bbbc27bcbdd4350"
   port             = 80
 }
 resource "aws_lb_target_group_attachment" "web-2" {
-  target_group_arn = aws_alb_target_group.web.arn
-  target_id        = "i-02c2f6075dfb64692"
+  target_group_arn = aws_lb_target_group.web.arn
+  target_id        = "i-09c9360658e08e67f"
   port             = 80
 }
 
@@ -134,14 +138,3 @@ resource "aws_instance" "web" {
     Name = "instance_count-${each.value}"
   }
 }
-
-#------------------------Parametrized Load Balancer-------------------------
-
-# data "aws_lb" "my_load_balancer" {
-#   depends_on = [aws_lb.alb, aws_lb.nlb]
-# }
-#
-# output "type_my_lb" {
-#   value       = aws_lb.my_load_balancer.load_balancer_type
-#   description = "Type created load balancer"
-# }
