@@ -1,4 +1,3 @@
-#AWS-task-ALB-or-NLB
 ## Guide for run LB
 
 ### For Application Load Balancer
